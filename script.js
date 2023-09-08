@@ -4,6 +4,7 @@ const NUMBER_OF_GUESSES = 6;
 let guessesRemaining = NUMBER_OF_GUESSES;
 let currentGuess = [];
 let nextLetter = 0;
+let numberBoards = 0;
 let rightGuessString = WORDS[Math.floor(Math.random() * WORDS.length)]
 console.log(rightGuessString)
 
@@ -15,12 +16,12 @@ Different guess for each board
 stop createing boards when all leters have been guessed
 */
 
-function initBoard(n) {
+function initBoard() {
     /* Create the board */
     let boards = document.getElementById("game-boards");
 
     let board = document.createElement("div")
-    board.id = "board"+n
+    board.id = "board"+numberBoards
     for (let i = 0; i < NUMBER_OF_GUESSES; i++) {
         let row = document.createElement("div")
         row.className = "letter-row"
@@ -34,12 +35,25 @@ function initBoard(n) {
         board.appendChild(row)
     }
     boards.append(board)
+    //fillBoard()
     let line = document.createElement("hr")
     boards.append(line)
-
+    numberBoards=numberBoards+1
 }
 
 initBoard(0)
+
+function getLetterRow(numLetter,numBoard = 0){
+    return document.getElementsByClassName("letter-row")[numLetter + numBoard * 6]
+}
+
+function fillBoard(){
+    for (let i = 0; i < numRowsFilled; i++) {
+        row=getLetterRow(i,numberBoards)
+        let box = row.children[nextLetter]
+        box.textContent = "A"
+    }
+}
 
 document.addEventListener("keyup", (e) => {
 
@@ -72,7 +86,7 @@ function insertLetter (pressedKey) {
     }
     pressedKey = pressedKey.toLowerCase()
 
-    let row = document.getElementsByClassName("letter-row")[6 - guessesRemaining]
+    let row = getLetterRow(NUMBER_OF_GUESSES-guessesRemaining) //document.getElementsByClassName("letter-row")[6 - guessesRemaining]
     let box = row.children[nextLetter]
     animateCSS(box, "pulse")
     box.textContent = pressedKey
@@ -82,7 +96,7 @@ function insertLetter (pressedKey) {
 }
 
 function deleteLetter () {
-    let row = document.getElementsByClassName("letter-row")[6 - guessesRemaining]
+    let row = getLetterRow(NUMBER_OF_GUESSES-guessesRemaining) //document.getElementsByClassName("letter-row")[6 - guessesRemaining]
     let box = row.children[nextLetter - 1]
     box.textContent = ""
     box.classList.remove("filled-box")
@@ -91,7 +105,7 @@ function deleteLetter () {
 }
 
 function checkGuess () {
-    let row = document.getElementsByClassName("letter-row")[6 - guessesRemaining]
+    let row = getLetterRow(NUMBER_OF_GUESSES-guessesRemaining) //document.getElementsByClassName("letter-row")[6 - guessesRemaining]
     let guessString = ''
     let rightGuess = Array.from(rightGuessString)
 
@@ -110,7 +124,7 @@ function checkGuess () {
     }
 
     //create an additional board if it's not an error above
-    initBoard(1)
+    initBoard()
     
     for (let i = 0; i < 5; i++) {
         let letterColor = ''
