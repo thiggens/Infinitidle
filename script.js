@@ -7,9 +7,20 @@ let nextLetter = 0;
 let rightGuessString = WORDS[Math.floor(Math.random() * WORDS.length)]
 console.log(rightGuessString)
 
-function initBoard() {
-    let board = document.getElementById("game-board");
+/* TODO, everytime there is a guess add something tokeyboard test - done
+boards to array - done
+Move board creation to a separate function - done
+Fill all boards
+Different guess for each board
+stop createing boards when all leters have been guessed
+*/
 
+function initBoard(n) {
+    /* Create the board */
+    let boards = document.getElementById("game-boards");
+
+    let board = document.createElement("div")
+    board.id = "board"+n
     for (let i = 0; i < NUMBER_OF_GUESSES; i++) {
         let row = document.createElement("div")
         row.className = "letter-row"
@@ -22,9 +33,13 @@ function initBoard() {
 
         board.appendChild(row)
     }
+    boards.append(board)
+    let line = document.createElement("hr")
+    boards.append(line)
+
 }
 
-initBoard()
+initBoard(0)
 
 document.addEventListener("keyup", (e) => {
 
@@ -94,6 +109,8 @@ function checkGuess () {
         return
     }
 
+    //create an additional board if it's not an error above
+    initBoard(1)
     
     for (let i = 0; i < 5; i++) {
         let letterColor = ''
