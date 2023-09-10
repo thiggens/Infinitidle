@@ -1,16 +1,11 @@
 import { WORDS } from "./words.js";
 
 let NUMBER_OF_GUESSES = 6;
-//let guessesRemaining = NUMBER_OF_GUESSES;
 let currentRow = 0
 let currentGuess = [];
 let guessBlock = []
 let nextLetter = 0;
-let numberBoards = 0; //boards run from 1 upwards
-//let rightGuessString = WORDS[Math.floor(Math.random() * WORDS.length)]
-//let rightGuessStringArray = []
-//let rightGuessBool = []
-//console.log(rightGuessString)
+let numberBoards = 0;
 
 /* TODO, everytime there is a guess add something tokeyboard test - done
 boards to array - done
@@ -42,11 +37,6 @@ function initBoard() {
     board["rightGuess"]=WORDS[Math.floor(Math.random() * WORDS.length)]
     board["boolGuess"]=false
 
-
-   // rightGuessStringArray.push(board.rightGuess)
-    // rightGuessBool.push(false)
-
- 
     for (let i = 0; i < NUMBER_OF_GUESSES; i++) {
         let row = document.createElement("div")
         row.className = "letter-row"
@@ -66,29 +56,16 @@ function initBoard() {
 }
 
 function fillBoard(board){
-    //let boardn = board.id.substring(5)
-    //let rightGuess=board.rightGuess
-    //let rightGuess=Array.from(rightGuessStringArray[boardn])
-    // Fencepost nightmare, numboards seems to be in two places
     for (let i = 0; i < numberBoards-1; i++) {
         let row=getLetterRowBoard(i,board);  
-        //let firstBoardRow=getLetterRow(i,1); // I've changed the scheme TODO
-        //let firstBoardRowGuess=[]
         for (let j = 0; j<5; j++ ){
             let box = row.children[j]
-           //let firstBoardBox = firstBoardRow.children[j]
-            box.textContent= guessBlock[i].substr(j,1) //.push(guessString)//irstBoardBox.textContent
-            //firstBoardRowGuess.push(firstBoardBox.textContent)
+            box.textContent= guessBlock[i].substr(j,1) 
         }
 
         colourRow(row,guessBlock[i],board.rightGuess)
     }
 }
-
-//TODO get rid of this
-//function getLetterRow(numRow,numBoard = 1){
-//    return document.getElementsByClassName("letter-row")[numRow + (numBoard-1) * 6]
-//}
 
 function getLetterRowBoard(numRow,board){
     return board.getElementsByClassName("letter-row")[numRow]
@@ -96,7 +73,6 @@ function getLetterRowBoard(numRow,board){
 
 document.addEventListener("keyup", (e) => {
 
-    //if (guessesRemaining === 0) {
     if (currentRow === NUMBER_OF_GUESSES) {
         return
     }
@@ -128,7 +104,6 @@ function insertLetter (pressedKey) {
 
     for (let board of document.getElementById("game-boards").getElementsByClassName("board")){
         if (!board.boolGuess) {
-            //let row = getLetterRowBoard(NUMBER_OF_GUESSES-guessesRemaining,board) 
             let row = getLetterRowBoard(currentRow,board) 
             let box = row.children[nextLetter]
             animateCSS(box, "pulse")
@@ -142,7 +117,6 @@ function insertLetter (pressedKey) {
 
 function deleteLetter () {
     for (let board of document.getElementById("game-boards").getElementsByClassName("board")){
-        //let row = getLetterRowBoard(NUMBER_OF_GUESSES-guessesRemaining,board) 
         let row = getLetterRowBoard(currentRow,board) 
         let box = row.children[nextLetter - 1]
         box.textContent = ""
@@ -226,13 +200,11 @@ function checkGuess () {
         }
     }
 
-    if (allRightGuess == true){//! rightGuessBool.includes(false)) {
+    if (allRightGuess == true){
         toastr.success("You guessed right! Game over!")
-        //guessesRemaining = 0
         currentRow=NUMBER_OF_GUESSES
         return
     } else {
-       // guessesRemaining -= 1;
         currentRow += 1;
         //create an additional board if it's not an error above
         initBoard() 
@@ -258,7 +230,6 @@ function checkGuess () {
                 }   
             }
         }
-        //if (guessesRemaining === 0) {
         if (currentRow == NUMBER_OF_GUESSES) {
             toastr.error("You've run out of guesses! Game over!")
             toastr.info(`The right words were: "${rightGuessStringArray}"`)
@@ -304,7 +275,6 @@ const animateCSS = (element, animation, prefix = 'animate__') =>
   // We create a Promise and return it
   new Promise((resolve, reject) => {
     const animationName = `${prefix}${animation}`;
-    // const node = document.querySelector(element);
     const node = element
     node.style.setProperty('--animate-duration', '0.3s');
     
