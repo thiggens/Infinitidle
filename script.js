@@ -3,12 +3,13 @@ import { WORDS } from "./words.js";
 const NUMBER_OF_GUESSES = 6;
 let guessesRemaining = NUMBER_OF_GUESSES;
 let currentGuess = [];
+let guessBlock = []
 let nextLetter = 0;
 let numberBoards = 0; //boards run from 1 upwards
-let rightGuessString = WORDS[Math.floor(Math.random() * WORDS.length)]
-let rightGuessStringArray = []
-let rightGuessBool = []
-console.log(rightGuessString)
+//let rightGuessString = WORDS[Math.floor(Math.random() * WORDS.length)]
+//let rightGuessStringArray = []
+//let rightGuessBool = []
+//console.log(rightGuessString)
 
 /* TODO, everytime there is a guess add something tokeyboard test - done
 boards to array - done
@@ -18,11 +19,14 @@ Fill al lboards on keypress - done
 there is some subtle error in filling hte board later on,
 Link boards + guesses + everything: - done
 Different guess for each board - done
-move from for loops to iterate over boards and row objects
-consistent iterators n for borads, r for rows etc...
-Stop enternign when the guess is right
+move from for loops to iterate over boards and row objects - done
+consistent iterators n for borads, r for rows etc... - done
+Stop enternign when the guess is right - done
+TODO fix issue with pinting at first board
+add a row after every guess
 stop createing boards when all leters have been guessed
 move from listing boards to iterativing over them
+fix yellow in two places, if the first it gets it wrong
 host on aws
 */
 
@@ -32,10 +36,16 @@ function initBoard() {
 
     let board = document.createElement("div")
     board.id = "board"+numberBoards
+    board.className="board"
     numberBoards=numberBoards+1
-    rightGuessStringArray.push(WORDS[Math.floor(Math.random() * WORDS.length)])
-    rightGuessBool.push(false)
+    board["rightGuess"]=WORDS[Math.floor(Math.random() * WORDS.length)]
+    board["boolGuess"]=false
 
+
+   // rightGuessStringArray.push(board.rightGuess)
+    // rightGuessBool.push(false)
+
+ 
     for (let i = 0; i < NUMBER_OF_GUESSES; i++) {
         let row = document.createElement("div")
         row.className = "letter-row"
@@ -55,29 +65,33 @@ function initBoard() {
 }
 
 function fillBoard(board){
-    let boardn = board.id.substring(5)
-    let rightGuess=Array.from(rightGuessStringArray[boardn])
+    //let boardn = board.id.substring(5)
+    //let rightGuess=board.rightGuess
+    //let rightGuess=Array.from(rightGuessStringArray[boardn])
     // Fencepost nightmare, numboards seems to be in two places
     for (let i = 0; i < numberBoards-1; i++) {
-        let row=getLetterRow(i,boardn);  
-        let firstBoardRow=getLetterRow(i,1);
-        let firstBoardRowGuess=[]
+        let row=getLetterRowBoard(i,board);  
+        //let firstBoardRow=getLetterRow(i,1); // I've changed the scheme TODO
+        //let firstBoardRowGuess=[]
         for (let j = 0; j<5; j++ ){
             let box = row.children[j]
-            let firstBoardBox = firstBoardRow.children[j]
-            box.textContent=firstBoardBox.textContent
-            firstBoardRowGuess.push(firstBoardBox.textContent)
+           //let firstBoardBox = firstBoardRow.children[j]
+            box.textContent= guessBlock[i].substr(j,1) //.push(guessString)//irstBoardBox.textContent
+            //firstBoardRowGuess.push(firstBoardBox.textContent)
         }
 
-        colourRow(row,firstBoardRowGuess,rightGuess)
+        colourRow(row,guessBlock[i],board.rightGuess)
     }
 }
 
-
+//TODO get rid of this
 function getLetterRow(numRow,numBoard = 1){
     return document.getElementsByClassName("letter-row")[numRow + (numBoard-1) * 6]
 }
 
+function getLetterRowBoard(numRow,board){
+    return board.getElementsByClassName("letter-row")[numRow]
+}
 
 document.addEventListener("keyup", (e) => {
 
@@ -110,20 +124,24 @@ function insertLetter (pressedKey) {
     }
     pressedKey = pressedKey.toLowerCase()
 
-    for (let i = 0; i < numberBoards; i++) {
-        let row = getLetterRow(NUMBER_OF_GUESSES-guessesRemaining,i+1) //document.getElementsByClassName("letter-row")[6 - guessesRemaining]
-        let box = row.children[nextLetter]
-        animateCSS(box, "pulse")
-        box.textContent = pressedKey
-        box.classList.add("filled-box")
+    for (let board of document.getElementById("game-boards").getElementsByClassName("board")){
+        if (!board.rightGuessBool) {
+       //let row = getLetterRow(NUMBER_OF_GUESSES-guessesRemaining,i+1) //document.getElementsByClassName("letter-row")[6 - guessesRemaining]
+            let row = getLetterRowBoard(NUMBER_OF_GUESSES-guessesRemaining,board) //document.getElementsByClassName("letter-row")[6 - guessesRemaining]
+            let box = row.children[nextLetter]
+            animateCSS(box, "pulse")
+            box.textContent = pressedKey
+            box.classList.add("filled-box")
+        }
     }
     currentGuess.push(pressedKey)
     nextLetter += 1
 }
 
 function deleteLetter () {
-    for (let i = 0; i < numberBoards; i++) {
-        let row = getLetterRow(NUMBER_OF_GUESSES-guessesRemaining,i+1) //document.getElementsByClassName("letter-row")[6 - guessesRemaining]
+    for (let board of document.getElementById("game-boards").getElementsByClassName("board")){
+        //for (let i = 0; i < numberBoards; i++) {
+        let row = getLetterRowBoard(NUMBER_OF_GUESSES-guessesRemaining,board) //document.getElementsByClassName("letter-row")[6 - guessesRemaining]
         let box = row.children[nextLetter - 1]
         box.textContent = ""
         box.classList.remove("filled-box")
@@ -183,18 +201,32 @@ function checkGuess () {
         toastr.error("Word not in list!")
         return
     }
-           
-    for (let n = 0; n < numberBoards; n++) {
-        toastr.info(n+currentGuess+":"+rightGuessStringArray[n]+rightGuessBool)
-        let rightGuess = Array.from(rightGuessStringArray[n])
-        let row = getLetterRow(NUMBER_OF_GUESSES-guessesRemaining,n+1)
-        colourRow(row, currentGuess ,rightGuess) 
-        if (guessString == rightGuessStringArray[n]){
-            rightGuessBool[n]=true
+
+    guessBlock.push(guessString)
+
+    for (let board of document.getElementById("game-boards").getElementsByClassName("board")){
+        if (!board.rightGuessBool){
+        //for (let n = 0; n < numberBoards; n++) {
+            toastr.info(board.id+":"+board.rightGuess+":"+currentGuess)
+            let rightGuess = Array.from(board.rightGuess)
+            let row = getLetterRowBoard(NUMBER_OF_GUESSES-guessesRemaining,board)
+            colourRow(row, currentGuess ,rightGuess) 
+            if (guessString ==board.rightGuess ){//rightGuessStringArray[n]
+                //let n = Number(board.id.substring(5))
+                //rightGuessBool[n]=true
+                board.rightGuessBool=true
+            }
         }
     }
 
-    if (! rightGuessBool.includes(false)) {
+    let allRightGuess = true
+    for (let board of document.getElementById("game-boards").getElementsByClassName("board")){
+        if (!board.rightGuessBool){
+            allRightGuess=false
+        }
+    }
+
+    if (allRightGuess == true){//! rightGuessBool.includes(false)) {
         toastr.success("You guessed right! Game over!")
         guessesRemaining = 0
         return
