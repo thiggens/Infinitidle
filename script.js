@@ -4,16 +4,20 @@ const NUMBER_OF_GUESSES = 6;
 let guessesRemaining = NUMBER_OF_GUESSES;
 let currentGuess = [];
 let nextLetter = 0;
-let numberBoards = 0;
+let numberBoards = 0; //boards run from 1 upwards
 let rightGuessString = WORDS[Math.floor(Math.random() * WORDS.length)]
 console.log(rightGuessString)
 
 /* TODO, everytime there is a guess add something tokeyboard test - done
 boards to array - done
 Move board creation to a separate function - done
-Fill all boards
+Fill all boards on init - done
+Fill al lboards on keypress - done
+Link boards + guesses + everything: 
 Different guess for each board
 stop createing boards when all leters have been guessed
+move from listing boards to iterativing over them
+host on aws
 */
 
 function initBoard() {
@@ -21,6 +25,7 @@ function initBoard() {
     let boards = document.getElementById("game-boards");
 
     let board = document.createElement("div")
+    numberBoards=numberBoards+1
     board.id = "board"+numberBoards
     for (let i = 0; i < NUMBER_OF_GUESSES; i++) {
         let row = document.createElement("div")
@@ -35,25 +40,32 @@ function initBoard() {
         board.appendChild(row)
     }
     boards.append(board)
-    //fillBoard()
+    fillBoard()
     let line = document.createElement("hr")
     boards.append(line)
-    numberBoards=numberBoards+1
-}
-
-initBoard(0)
-
-function getLetterRow(numLetter,numBoard = 0){
-    return document.getElementsByClassName("letter-row")[numLetter + numBoard * 6]
 }
 
 function fillBoard(){
-    for (let i = 0; i < numRowsFilled; i++) {
-        row=getLetterRow(i,numberBoards)
-        let box = row.children[nextLetter]
-        box.textContent = "A"
+    let rightGuess=Array.from(rightGuessString)
+    // Fencepost nightmare, numboards seems to be in two places
+    for (let i = 0; i < numberBoards-1; i++) {
+        let row=getLetterRow(i,numberBoards);  
+        let firstRow=getLetterRow(i,1);
+        for (let j = 0; j<5; j++ ){
+            let box = row.children[j]
+            let firstBox = firstRow.children[j]
+            box.textContent=firstBox.textContent
+        }
+        colourRow(row,currentGuess,rightGuess) 
     }
 }
+
+
+function getLetterRow(numRow,numBoard = 1){
+    return document.getElementsByClassName("letter-row")[numRow + (numBoard-1) * 6]
+}
+
+
 
 document.addEventListener("keyup", (e) => {
 
@@ -86,26 +98,66 @@ function insertLetter (pressedKey) {
     }
     pressedKey = pressedKey.toLowerCase()
 
-    let row = getLetterRow(NUMBER_OF_GUESSES-guessesRemaining) //document.getElementsByClassName("letter-row")[6 - guessesRemaining]
-    let box = row.children[nextLetter]
-    animateCSS(box, "pulse")
-    box.textContent = pressedKey
-    box.classList.add("filled-box")
+    for (let i = 0; i < numberBoards; i++) {
+        let row = getLetterRow(NUMBER_OF_GUESSES-guessesRemaining,i+1) //document.getElementsByClassName("letter-row")[6 - guessesRemaining]
+        let box = row.children[nextLetter]
+        animateCSS(box, "pulse")
+        box.textContent = pressedKey
+        box.classList.add("filled-box")
+    }
     currentGuess.push(pressedKey)
     nextLetter += 1
 }
 
 function deleteLetter () {
-    let row = getLetterRow(NUMBER_OF_GUESSES-guessesRemaining) //document.getElementsByClassName("letter-row")[6 - guessesRemaining]
-    let box = row.children[nextLetter - 1]
-    box.textContent = ""
-    box.classList.remove("filled-box")
+    for (let i = 0; i < numberBoards; i++) {
+        let row = getLetterRow(NUMBER_OF_GUESSES-guessesRemaining,i+1) //document.getElementsByClassName("letter-row")[6 - guessesRemaining]
+        let box = row.children[nextLetter - 1]
+        box.textContent = ""
+        box.classList.remove("filled-box")
+    }
     currentGuess.pop()
     nextLetter -= 1
 }
 
+function colourRow (row, testWord, rightGuess) {
+    //how we deal with multi letters, it picks the first one to check from the left
+    let rightGuessUpdate=[...rightGuess] //copy without refernce
+    for (let i = 0; i < 5; i++) {
+        let letterColor = ''
+        let box = row.children[i]
+        let letter = testWord[i]
+        
+        let letterPosition = rightGuessUpdate.indexOf(testWord[i])
+        // is letter in the correct guess
+        if (letterPosition === -1) {
+            letterColor = 'grey'
+        } else {
+            // now, letter is definitely in word
+            // if letter index and right guess index are the same
+            // letter is in the right position 
+            if (testWord[i] === rightGuessUpdate[i]) {
+                // shade green 
+                letterColor = 'green'
+            } else {
+                // shade box yellow
+                letterColor = 'yellow'
+            }
+           rightGuessUpdate[letterPosition] = "#"
+        }
+
+        let delay = 250 * i
+        setTimeout(()=> {
+            //shade box
+            animateCSS(box, 'flipInX')
+            box.style.backgroundColor = letterColor
+            shadeKeyBoard(letter, letterColor)
+        }, delay)
+    }
+}
+
 function checkGuess () {
-    let row = getLetterRow(NUMBER_OF_GUESSES-guessesRemaining) //document.getElementsByClassName("letter-row")[6 - guessesRemaining]
+    toastr.info(currentGuess+":"+rightGuessString)
     let guessString = ''
     let rightGuess = Array.from(rightGuessString)
 
@@ -122,41 +174,10 @@ function checkGuess () {
         toastr.error("Word not in list!")
         return
     }
-
-    //create an additional board if it's not an error above
-    initBoard()
     
-    for (let i = 0; i < 5; i++) {
-        let letterColor = ''
-        let box = row.children[i]
-        let letter = currentGuess[i]
-        
-        let letterPosition = rightGuess.indexOf(currentGuess[i])
-        // is letter in the correct guess
-        if (letterPosition === -1) {
-            letterColor = 'grey'
-        } else {
-            // now, letter is definitely in word
-            // if letter index and right guess index are the same
-            // letter is in the right position 
-            if (currentGuess[i] === rightGuess[i]) {
-                // shade green 
-                letterColor = 'green'
-            } else {
-                // shade box yellow
-                letterColor = 'yellow'
-            }
-
-            rightGuess[letterPosition] = "#"
-        }
-
-        let delay = 250 * i
-        setTimeout(()=> {
-            //shade box
-            animateCSS(box, 'flipInX')
-            box.style.backgroundColor = letterColor
-            shadeKeyBoard(letter, letterColor)
-        }, delay)
+    for (let i = 0; i < numberBoards; i++) {
+        let row = getLetterRow(NUMBER_OF_GUESSES-guessesRemaining,i+1)
+        colourRow(row, currentGuess ,rightGuess) 
     }
 
     if (guessString === rightGuessString) {
@@ -165,14 +186,17 @@ function checkGuess () {
         return
     } else {
         guessesRemaining -= 1;
+        //create an additional board if it's not an error above
+        initBoard() 
         currentGuess = [];
         nextLetter = 0;
-
+        // why can't I put init board here?
         if (guessesRemaining === 0) {
             toastr.error("You've run out of guesses! Game over!")
             toastr.info(`The right word was: "${rightGuessString}"`)
         }
     }
+ 
 }
 
 function shadeKeyBoard(letter, color) {
@@ -228,3 +252,6 @@ const animateCSS = (element, animation, prefix = 'animate__') =>
 
     node.addEventListener('animationend', handleAnimationEnd, {once: true});
 });
+
+
+initBoard()
