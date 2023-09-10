@@ -182,9 +182,8 @@ function checkGuess () {
 
     for (let board of document.getElementById("game-boards").getElementsByClassName("board")){
         if (!board.boolGuess){ 
-            toastr.info(board.id+":"+board.rightGuess+":"+currentGuess)
+            //toastr.info(board.id+":"+board.rightGuess+":"+currentGuess)
             let rightGuess = Array.from(board.rightGuess)
-            //let row = getLetterRowBoard(NUMBER_OF_GUESSES-guessesRemaining,board) 
             let row = getLetterRowBoard(currentRow,board) 
             colourRow(row, currentGuess ,rightGuess) 
             if (guessString ==board.rightGuess ){
