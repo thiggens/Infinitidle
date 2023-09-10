@@ -24,7 +24,7 @@ move from for loops to iterate over boards and row objects - done
 consistent iterators n for borads, r for rows etc... - done
 Stop enternign when the guess is right - done
 TODO fix issue with pinting at first board - done
-add a row after every guess, pointer to the current row
+add a row after every guess, pointer to the current row  - done
 stop createing boards when all leters have been guessed
 move from listing boards to iterativing over them
 fix yellow in two places, if the first it gets it wrong
@@ -238,19 +238,25 @@ function checkGuess () {
         initBoard() 
         currentGuess = [];
         nextLetter = 0;
-        // increase number of gueses + rows 
-        NUMBER_OF_GUESSES += 1
-        for (let board of document.getElementById("game-boards").getElementsByClassName("board")){
-            if (!board.boolGuess){
-                let row = document.createElement("div")
-                row.className = "letter-row"
-                for (let j = 0; j < 5; j++) {
-                    let box = document.createElement("div")
-                    box.className = "letter-box"
-                    row.appendChild(box)
-                }
-                board.appendChild(row)
-            }   
+        // increase number of gueses + rows if we haven't guessed all letters
+        let guessLetterSet = new Set(guessBlock.toString()
+            .toLowerCase()
+            .replace(/[^a-z]/g, '')
+        )
+        if(guessLetterSet.size < 26){
+            NUMBER_OF_GUESSES += 1
+            for (let board of document.getElementById("game-boards").getElementsByClassName("board")){
+                if (!board.boolGuess){
+                    let row = document.createElement("div")
+                    row.className = "letter-row"
+                    for (let j = 0; j < 5; j++) {
+                        let box = document.createElement("div")
+                        box.className = "letter-box"
+                        row.appendChild(box)
+                    }
+                    board.appendChild(row)
+                }   
+            }
         }
         //if (guessesRemaining === 0) {
         if (currentRow == NUMBER_OF_GUESSES) {
