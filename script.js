@@ -6,6 +6,7 @@ let currentGuess = [];
 let nextLetter = 0;
 let numberBoards = 0; //boards run from 1 upwards
 let rightGuessString = WORDS[Math.floor(Math.random() * WORDS.length)]
+let rightGuessStringArray = []
 console.log(rightGuessString)
 
 /* TODO, everytime there is a guess add something tokeyboard test - done
@@ -13,6 +14,7 @@ boards to array - done
 Move board creation to a separate function - done
 Fill all boards on init - done
 Fill al lboards on keypress - done
+there is some subtle error in filling hte board later on,
 Link boards + guesses + everything: 
 Different guess for each board
 stop createing boards when all leters have been guessed
@@ -25,8 +27,10 @@ function initBoard() {
     let boards = document.getElementById("game-boards");
 
     let board = document.createElement("div")
-    numberBoards=numberBoards+1
     board.id = "board"+numberBoards
+    numberBoards=numberBoards+1
+    rightGuessStringArray.push(rightGuessString)
+
     for (let i = 0; i < NUMBER_OF_GUESSES; i++) {
         let row = document.createElement("div")
         row.className = "letter-row"
@@ -40,23 +44,27 @@ function initBoard() {
         board.appendChild(row)
     }
     boards.append(board)
-    fillBoard()
+    fillBoard(board)
     let line = document.createElement("hr")
     boards.append(line)
 }
 
-function fillBoard(){
-    let rightGuess=Array.from(rightGuessString)
+function fillBoard(board){
+    let boardn = board.id.substring(5)
+    let rightGuess=Array.from(rightGuessStringArray[boardn])
     // Fencepost nightmare, numboards seems to be in two places
     for (let i = 0; i < numberBoards-1; i++) {
-        let row=getLetterRow(i,numberBoards);  
-        let firstRow=getLetterRow(i,1);
+        let row=getLetterRow(i,boardn);  
+        let firstBoardRow=getLetterRow(i,1);
+        let firstBoardRowGuess=[]
         for (let j = 0; j<5; j++ ){
             let box = row.children[j]
-            let firstBox = firstRow.children[j]
-            box.textContent=firstBox.textContent
+            let firstBoardBox = firstBoardRow.children[j]
+            box.textContent=firstBoardBox.textContent
+            firstBoardRowGuess.push(firstBoardBox.textContent)
         }
-        colourRow(row,currentGuess,rightGuess) 
+
+        colourRow(row,firstBoardRowGuess,rightGuess)
     }
 }
 
@@ -64,7 +72,6 @@ function fillBoard(){
 function getLetterRow(numRow,numBoard = 1){
     return document.getElementsByClassName("letter-row")[numRow + (numBoard-1) * 6]
 }
-
 
 
 document.addEventListener("keyup", (e) => {
