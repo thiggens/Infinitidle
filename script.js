@@ -7,6 +7,7 @@ let nextLetter = 0;
 let numberBoards = 0; //boards run from 1 upwards
 let rightGuessString = WORDS[Math.floor(Math.random() * WORDS.length)]
 let rightGuessStringArray = []
+let rightGuessBool = []
 console.log(rightGuessString)
 
 /* TODO, everytime there is a guess add something tokeyboard test - done
@@ -15,8 +16,11 @@ Move board creation to a separate function - done
 Fill all boards on init - done
 Fill al lboards on keypress - done
 there is some subtle error in filling hte board later on,
-Link boards + guesses + everything: 
-Different guess for each board
+Link boards + guesses + everything: - done
+Different guess for each board - done
+move from for loops to iterate over boards and row objects
+consistent iterators n for borads, r for rows etc...
+Stop enternign when the guess is right
 stop createing boards when all leters have been guessed
 move from listing boards to iterativing over them
 host on aws
@@ -29,7 +33,8 @@ function initBoard() {
     let board = document.createElement("div")
     board.id = "board"+numberBoards
     numberBoards=numberBoards+1
-    rightGuessStringArray.push(rightGuessString)
+    rightGuessStringArray.push(WORDS[Math.floor(Math.random() * WORDS.length)])
+    rightGuessBool.push(false)
 
     for (let i = 0; i < NUMBER_OF_GUESSES; i++) {
         let row = document.createElement("div")
@@ -164,10 +169,7 @@ function colourRow (row, testWord, rightGuess) {
 }
 
 function checkGuess () {
-    toastr.info(currentGuess+":"+rightGuessString)
     let guessString = ''
-    let rightGuess = Array.from(rightGuessString)
-
     for (const val of currentGuess) {
         guessString += val
     }
@@ -181,13 +183,18 @@ function checkGuess () {
         toastr.error("Word not in list!")
         return
     }
-    
-    for (let i = 0; i < numberBoards; i++) {
-        let row = getLetterRow(NUMBER_OF_GUESSES-guessesRemaining,i+1)
+           
+    for (let n = 0; n < numberBoards; n++) {
+        toastr.info(n+currentGuess+":"+rightGuessStringArray[n]+rightGuessBool)
+        let rightGuess = Array.from(rightGuessStringArray[n])
+        let row = getLetterRow(NUMBER_OF_GUESSES-guessesRemaining,n+1)
         colourRow(row, currentGuess ,rightGuess) 
+        if (guessString == rightGuessStringArray[n]){
+            rightGuessBool[n]=true
+        }
     }
 
-    if (guessString === rightGuessString) {
+    if (! rightGuessBool.includes(false)) {
         toastr.success("You guessed right! Game over!")
         guessesRemaining = 0
         return
@@ -200,10 +207,9 @@ function checkGuess () {
         // why can't I put init board here?
         if (guessesRemaining === 0) {
             toastr.error("You've run out of guesses! Game over!")
-            toastr.info(`The right word was: "${rightGuessString}"`)
+            toastr.info(`The right words were: "${rightGuessStringArray}"`)
         }
-    }
- 
+    } 
 }
 
 function shadeKeyBoard(letter, color) {
