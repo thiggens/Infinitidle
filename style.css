@@ -13,8 +13,8 @@ h1 {
     margin: 2px;
     font-size: 3rem;
     font-weight: 700;
-    height: 4rem;
-    width: 4rem;
+    height: 3rem;
+    width: 3rem;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -47,7 +47,7 @@ h1 {
   .keyboard-button {
     font-size: 1rem;
     font-weight: 700;
-    padding: 0.5rem;
+    padding: 0.2rem;
     margin: 0 2px;
     cursor: pointer;
     text-transform: uppercase;
