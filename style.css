@@ -52,7 +52,7 @@ h1 {
 }
 
 #keyboard-cont {
-  margin: 1rem 0;
+  margin: 0rem 0;
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -78,8 +78,8 @@ h1 {
 .keyboard-button {
   font-size: 1rem;
   font-weight: 700;
-  padding: 0.2rem;
-  margin: 0 2px;
+  padding: 0.3rem;
+  margin: 0 3px;
   cursor: pointer;
   text-transform: uppercase;
 }
