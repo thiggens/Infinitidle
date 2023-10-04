@@ -83,7 +83,7 @@ document.addEventListener("keyup", (e) => {
         return
     }
 
-    if (pressedKey === "↵") {
+    if (pressedKey === "Enter") {
         checkGuess()
         return
     }
@@ -264,6 +264,10 @@ document.getElementById("keyboard-cont").addEventListener("click", (e) => {
 
     if (key === "␡") {
         key = "Backspace"
+    } 
+
+    if (key === "↵") {
+        key = "Enter"
     } 
 
     document.dispatchEvent(new KeyboardEvent("keyup", {'key': key}))
